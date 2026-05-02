@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mis Cosas" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Mis Cosas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+      min-height: 100vh;
+      color: #0f172a;
+      overscroll-behavior: none;
+    }
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .container { max-width: 28rem; margin: 0 auto; padding: 1rem; }
+
+    /* Cabecera con título grande */
+    .app-header {
+      background: #0f172a;
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .app-header .logo {
+      width: 2.75rem; height: 2.75rem; border-radius: 0.625rem;
+      background: rgba(251, 191, 36, 0.15);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .app-header .logo svg { width: 1.5rem; height: 1.5rem; color: #fbbf24; }
+    .app-header h1 {
+      font-size: 1.4rem; font-weight: 700; color: white;
+      letter-spacing: -0.01em;
+    }
+    .app-header .subtitle {
+      font-size: 0.7rem; color: #94a3b8; font-weight: 500;
+      margin-top: 0.1rem;
+    }
+
+    /* Selector de objeto en cuadrícula */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+    .item-tab {
+      padding: 0.625rem 0.4rem;
+      border: none;
+      background: transparent;
+      border-radius: 0.625rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      text-align: center;
+      line-height: 1.15;
+      min-height: 4.2rem;
+      justify-content: center;
+    }
+    .item-tab.active {
+      background: #0f172a;
+      color: #fbbf24;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .item-tab svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+    .item-tab .label {
+      display: block;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+
+    /* Toggle GPS */
+    .gps-toggle {
+      display: flex; align-items: center; gap: 0.625rem;
+      background: white; padding: 0.625rem 0.875rem; border-radius: 0.875rem;
+      border: 1px solid #e2e8f0; margin-bottom: 1rem;
+      font-size: 0.85rem; cursor: pointer;
+    }
+    .gps-toggle .gps-icon {
+      width: 2rem; height: 2rem; border-radius: 0.5rem;
+      background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: #64748b;
+    }
+    .gps-toggle.active .gps-icon { background: #ecfdf5; color: #059669; }
+    .gps-toggle svg { width: 1.125rem; height: 1.125rem; }
+    .gps-toggle .gps-text { flex: 1; color: #334155; font-weight: 500; }
+    .gps-toggle .gps-status {
+      font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; font-weight: 400;
+    }
+    .gps-toggle.active .gps-status { color: #059669; }
+    .switch {
+      position: relative; width: 2.5rem; height: 1.4rem;
+      background: #cbd5e1; border-radius: 9999px; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .switch::after {
+      content: ""; position: absolute; top: 0.15rem; left: 0.15rem;
+      width: 1.1rem; height: 1.1rem; background: white; border-radius: 50%;
+      transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .gps-toggle.active .switch { background: #10b981; }
+    .gps-toggle.active .switch::after { transform: translateX(1.1rem); }
+
+    .current-card {
+      border-radius: 1rem; padding: 1.25rem; margin-bottom: 1.5rem;
+      border: 2px solid; transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .current-card.entrada { background: #fffbeb; border-color: #f59e0b; }
+    .current-card.coche { background: #eff6ff; border-color: #3b82f6; }
+    .current-card.bolsillo { background: #ecfdf5; border-color: #10b981; }
+    .current-card.moto { background: #fef2f2; border-color: #ef4444; }
+    .current-card.escritorio { background: #fefce8; border-color: #eab308; }
+    .current-card.cajon { background: #f5f3ff; border-color: #8b5cf6; }
+    .current-card.mochila { background: #fdf4ff; border-color: #d946ef; }
+    .current-card.estuche { background: #f0fdfa; border-color: #14b8a6; }
+    .current-card.custom { background: #faf5ff; border-color: #a855f7; }
+    .current-empty {
+      background: white; border: 2px dashed #cbd5e1; border-radius: 1rem;
+      padding: 1.25rem; margin-bottom: 1.5rem; text-align: center;
+      color: #64748b; font-size: 0.875rem; line-height: 1.5;
+    }
+
+    .current-row { display: flex; align-items: center; gap: 1rem; }
+    .icon-box {
+      width: 3rem; height: 3rem; border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .icon-box svg { width: 1.5rem; height: 1.5rem; color: white; }
+    .bg-entrada { background: #f59e0b; }
+    .bg-coche { background: #3b82f6; }
+    .bg-bolsillo { background: #10b981; }
+    .bg-moto { background: #ef4444; }
+    .bg-escritorio { background: #eab308; }
+    .bg-cajon { background: #8b5cf6; }
+    .bg-mochila { background: #d946ef; }
+    .bg-estuche { background: #14b8a6; }
+    .bg-custom { background: #a855f7; }
+
+    .label-small {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: #64748b; font-weight: 600; margin-bottom: 0.2rem;
+    }
+    .current-text { font-size: 1.05rem; font-weight: 700; line-height: 1.25; word-break: break-word; }
+    .text-entrada { color: #b45309; }
+    .text-coche { color: #1d4ed8; }
+    .text-bolsillo { color: #047857; }
+    .text-moto { color: #b91c1c; }
+    .text-escritorio { color: #a16207; }
+    .text-cajon { color: #6d28d9; }
+    .text-mochila { color: #a21caf; }
+    .text-estuche { color: #0f766e; }
+    .text-custom { color: #7e22ce; }
+    .time-ago {
+      display: flex; align-items: center; gap: 0.25rem;
+      margin-top: 0.3rem; font-size: 0.75rem; color: #64748b;
+    }
+    .time-ago svg { width: 0.75rem; height: 0.75rem; }
+
+    .map-link {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      margin-top: 0.625rem; padding: 0.45rem 0.75rem;
+      background: white; border-radius: 9999px;
+      font-size: 0.8rem; font-weight: 600; color: #1d4ed8;
+      text-decoration: none; border: 1px solid #cbd5e1;
+    }
+    .map-link svg { width: 0.875rem; height: 0.875rem; }
+    .map-link:active { background: #f1f5f9; }
+
+    .selector-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: #64748b; font-weight: 600; margin-bottom: 0.625rem; padding: 0 0.25rem;
+    }
+
+    .option-button {
+      width: 100%; display: flex; align-items: center; gap: 0.875rem;
+      padding: 0.875rem; border-radius: 0.875rem; border: 2px solid #e2e8f0;
+      background: white; margin-bottom: 0.625rem; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .option-button:active { transform: scale(0.98); }
+    .option-button:disabled { opacity: 0.6; cursor: wait; }
+    .option-button.active.entrada { background: #fffbeb; border-color: #f59e0b; }
+    .option-button.active.coche { background: #eff6ff; border-color: #3b82f6; }
+    .option-button.active.bolsillo { background: #ecfdf5; border-color: #10b981; }
+    .option-button.active.moto { background: #fef2f2; border-color: #ef4444; }
+    .option-button.active.escritorio { background: #fefce8; border-color: #eab308; }
+    .option-button.active.cajon { background: #f5f3ff; border-color: #8b5cf6; }
+    .option-button.active.mochila { background: #fdf4ff; border-color: #d946ef; }
+    .option-button.active.estuche { background: #f0fdfa; border-color: #14b8a6; }
+    .option-button.active.custom { background: #faf5ff; border-color: #a855f7; }
+    .option-icon {
+      width: 2.5rem; height: 2.5rem; border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .option-icon svg { width: 1.25rem; height: 1.25rem; color: white; }
+    .option-text {
+      flex: 1; text-align: left; font-weight: 600; color: #334155; font-size: 0.95rem;
+      word-break: break-word;
+    }
+    .option-button.active .option-text.entrada-text { color: #b45309; }
+    .option-button.active .option-text.coche-text { color: #1d4ed8; }
+    .option-button.active .option-text.bolsillo-text { color: #047857; }
+    .option-button.active .option-text.moto-text { color: #b91c1c; }
+    .option-button.active .option-text.escritorio-text { color: #a16207; }
+    .option-button.active .option-text.cajon-text { color: #6d28d9; }
+    .option-button.active .option-text.mochila-text { color: #a21caf; }
+    .option-button.active .option-text.estuche-text { color: #0f766e; }
+    .option-button.active .option-text.custom-text { color: #7e22ce; }
+
+    .check-circle {
+      width: 1.5rem; height: 1.5rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .check-circle svg { width: 0.875rem; height: 0.875rem; color: white; }
+
+    .spinner {
+      width: 1.25rem; height: 1.25rem; border: 2.5px solid #cbd5e1;
+      border-top-color: #0f172a; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .history-section { margin-top: 1.5rem; }
+    .history-list {
+      background: white; border-radius: 0.875rem;
+      border: 1px solid #e2e8f0; overflow: hidden;
+    }
+    .history-item {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.75rem 0.875rem; border-bottom: 1px solid #f1f5f9;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-icon {
+      width: 2rem; height: 2rem; border-radius: 0.5rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .history-icon svg { width: 1rem; height: 1rem; color: white; }
+    .history-text { flex: 1; min-width: 0; }
+    .history-place { font-size: 0.875rem; font-weight: 600; color: #334155; word-break: break-word; }
+    .history-time { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; }
+    .history-gps {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      margin-top: 0.3rem; font-size: 0.7rem; color: #1d4ed8;
+      text-decoration: none; font-weight: 600;
+    }
+    .history-gps svg { width: 0.7rem; height: 0.7rem; }
+    .history-empty {
+      text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.8rem;
+    }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem; z-index: 100;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: 1rem; padding: 1.5rem;
+      width: 100%; max-width: 24rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    .modal h2 { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .modal p { font-size: 0.85rem; color: #64748b; margin-bottom: 1rem; }
+    .modal input {
+      width: 100%; padding: 0.75rem 0.875rem; border: 2px solid #e2e8f0;
+      border-radius: 0.75rem; font-size: 1rem; font-family: inherit;
+      margin-bottom: 1rem; outline: none;
+    }
+    .modal input:focus { border-color: #a855f7; }
+    .modal-buttons { display: flex; gap: 0.5rem; }
+    .btn {
+      flex: 1; padding: 0.75rem; border-radius: 0.75rem; border: none;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .btn-cancel { background: #f1f5f9; color: #475569; }
+    .btn-save { background: #0f172a; color: white; }
+
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: #0f172a; color: white; padding: 0.75rem 1.25rem;
+      border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.875rem; font-weight: 500;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      z-index: 50; max-width: calc(100% - 2rem);
+    }
+    .toast.show { opacity: 1; }
+    .toast svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+    .toast.success svg { color: #34d399; }
+    .toast.error { background: #991b1b; }
+    .toast.error svg { color: #fca5a5; }
+
+    .footer {
+      text-align: center; font-size: 0.7rem; color: #94a3b8; margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Cabecera con título grande -->
+    <div class="app-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-2 2"/><path d="m18 5 3 3"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Mis Cosas</h1>
+        <div class="subtitle">¿Dónde lo dejé?</div>
+      </div>
+    </div>
+
+    <!-- Selector de objeto en cuadrícula -->
+    <div id="item-grid" class="item-grid"></div>
+
+    <!-- Toggle GPS -->
+    <div id="gps-toggle" class="gps-toggle">
+      <div class="gps-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div class="gps-text">Guardar ubicación GPS</div>
+        <div class="gps-status" id="gps-status">Desactivado</div>
+      </div>
+      <div class="switch"></div>
+    </div>
+
+    <div id="current-card" class="current-empty">
+      Aún no has guardado ninguna ubicación.<br/>
+      Selecciona una abajo 👇
+    </div>
+
+    <p class="selector-label" id="selector-label">Selecciona dónde está</p>
+    <div id="options"></div>
+
+    <div class="history-section">
+      <p class="selector-label">Historial reciente</p>
+      <div id="history" class="history-list"></div>
+    </div>
+
+    <p class="footer">Las ubicaciones se guardan automáticamente</p>
+  </div>
+
+  <div id="modal" class="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">¿Dónde está?</h2>
+      <p>Escribe el lugar donde lo dejaste</p>
+      <input type="text" id="modal-input" placeholder="Ej: encima del microondas" maxlength="80" autocomplete="off" />
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-save" id="modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast success">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span id="toast-text">Ubicación guardada</span>
+  </div>
+
+  <script>
+    const ICONS = {
+      llaves: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-2 2"/><path d="m18 5 3 3"/></svg>',
+      cartera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+      llaves_moto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5.5 17.5h6l2-3 4-2-3-4-3 1-2 5"/></svg>',
+      movil_empresa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+      auriculares_huawei: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
+      auriculares_xiaomi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
+      entrada: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      coche: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>',
+      bolsillo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      moto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5.5 17.5h6l2-3 4-2-3-4-3 1-2 5"/></svg>',
+      escritorio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      cajon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><circle cx="12" cy="6" r="0.5" fill="currentColor"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/><circle cx="12" cy="18" r="0.5" fill="currentColor"/></svg>',
+      mochila: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M8 14h8"/></svg>',
+      estuche: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="3"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+      custom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+    };
+
+    const ITEMS = {
+      llaves: {
+        name: "llaves",
+        article: "las",
+        tabLabel: "Llaves",
+        tabIcon: "llaves",
+        modalTitle: "¿Dónde están las llaves?",
+        emptyText: "Aún no has guardado dónde están las llaves.",
+        locations: [
+          { id: "entrada", label: "En el cesto de la entrada", short: "Cesto de la entrada" },
+          { id: "coche", label: "En la guantera del coche", short: "Guantera del coche" },
+          { id: "bolsillo", label: "En mi bolsillo", short: "En tu bolsillo" },
+        ],
+      },
+      cartera: {
+        name: "cartera",
+        article: "la",
+        tabLabel: "Cartera",
+        tabIcon: "cartera",
+        modalTitle: "¿Dónde está la cartera?",
+        emptyText: "Aún no has guardado dónde está la cartera.",
+        locations: [
+          { id: "entrada", label: "En la entrada de casa", short: "Entrada de casa" },
+          { id: "coche", label: "En la guantera del conductor", short: "Guantera del conductor" },
+          { id: "bolsillo", label: "En mi bolsillo", short: "En tu bolsillo" },
+        ],
+      },
+      llaves_moto: {
+        name: "llaves de la moto",
+        article: "las",
+        tabLabel: "Llaves moto",
+        tabIcon: "llaves_moto",
+        modalTitle: "¿Dónde están las llaves de la moto?",
+        emptyText: "Aún no has guardado dónde están las llaves de la moto.",
+        locations: [
+          { id: "entrada", label: "En el cesto de la entrada", short: "Cesto de la entrada" },
+          { id: "moto", label: "Puestas en la moto", short: "Puestas en la moto" },
+          { id: "bolsillo", label: "En mi bolsillo", short: "En tu bolsillo" },
+        ],
+      },
+      movil_empresa: {
+        name: "móvil de empresa",
+        article: "el",
+        tabLabel: "Móvil empresa",
+        tabIcon: "movil_empresa",
+        modalTitle: "¿Dónde está el móvil de empresa?",
+        emptyText: "Aún no has guardado dónde está el móvil de empresa.",
+        locations: [
+          { id: "escritorio", label: "En el escritorio del trabajo", short: "Escritorio del trabajo" },
+          { id: "mochila", label: "En la mochila", short: "En la mochila" },
+          { id: "coche", label: "En el coche", short: "En el coche" },
+          { id: "entrada", label: "En la entrada de casa", short: "Entrada de casa" },
+        ],
+      },
+      auriculares_huawei: {
+        name: "auriculares Huawei",
+        article: "los",
+        tabLabel: "Aur. Huawei",
+        tabIcon: "auriculares_huawei",
+        modalTitle: "¿Dónde están los auriculares Huawei?",
+        emptyText: "Aún no has guardado dónde están los auriculares Huawei.",
+        locations: [
+          { id: "estuche", label: "En su estuche", short: "En su estuche" },
+          { id: "mochila", label: "En la mochila", short: "En la mochila" },
+          { id: "cajon", label: "En el cajón de la mesilla", short: "Cajón de la mesilla" },
+          { id: "bolsillo", label: "En mi bolsillo", short: "En tu bolsillo" },
+        ],
+      },
+      auriculares_xiaomi: {
+        name: "auriculares Xiaomi",
+        article: "los",
+        tabLabel: "Aur. Xiaomi",
+        tabIcon: "auriculares_xiaomi",
+        modalTitle: "¿Dónde están los auriculares Xiaomi?",
+        emptyText: "Aún no has guardado dónde están los auriculares Xiaomi.",
+        locations: [
+          { id: "estuche", label: "En su estuche", short: "En su estuche" },
+          { id: "mochila", label: "En la mochila", short: "En la mochila" },
+          { id: "cajon", label: "En el cajón de la mesilla", short: "Cajón de la mesilla" },
+          { id: "bolsillo", label: "En mi bolsillo", short: "En tu bolsillo" },
+        ],
+      },
+    };
+
+    const STORAGE_KEY = "items-locations-v4";
+    const GPS_PREF_KEY = "gps-enabled";
+    const CURRENT_ITEM_KEY = "current-item";
+    let state = {};
+    let currentItem = "llaves";
+    let gpsEnabled = false;
+    let savingId = null;
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) state = { ...state, ...JSON.parse(raw) };
+      } catch (e) { console.error(e); }
+      // Inicializar todos los objetos en state
+      Object.keys(ITEMS).forEach(k => {
+        if (!state[k]) state[k] = { location: null, customText: null, updatedAt: null, history: [] };
+        if (!state[k].history) state[k].history = [];
+      });
+      gpsEnabled = localStorage.getItem(GPS_PREF_KEY) === "true";
+      const saved = localStorage.getItem(CURRENT_ITEM_KEY);
+      if (saved && ITEMS[saved]) currentItem = saved;
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getGPS() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error("Geolocalización no soportada"));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: Math.round(pos.coords.accuracy),
+          }),
+          (err) => reject(err),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+
+    async function setLocation(item, locationId, customText = null) {
+      let gps = null;
+      if (gpsEnabled) {
+        savingId = locationId;
+        render();
+        try {
+          gps = await getGPS();
+        } catch (err) {
+          showToast(getGpsErrorMessage(err), "error");
+        } finally {
+          savingId = null;
+        }
+      }
+
+      const now = new Date().toISOString();
+      const entry = { location: locationId, customText, updatedAt: now, gps };
+      state[item].location = locationId;
+      state[item].customText = customText;
+      state[item].updatedAt = now;
+      state[item].gps = gps;
+      state[item].history.unshift(entry);
+      if (state[item].history.length > 5) state[item].history = state[item].history.slice(0, 5);
+      persist();
+      render();
+      if (gps) {
+        showToast(`Guardado con GPS (±${gps.accuracy}m)`, "success");
+      } else if (!gpsEnabled) {
+        showToast("Ubicación guardada", "success");
+      }
+    }
+
+    function getGpsErrorMessage(err) {
+      if (err.code === 1) return "Permiso de GPS denegado";
+      if (err.code === 2) return "GPS no disponible";
+      if (err.code === 3) return "GPS tardó demasiado";
+      return "Error al obtener GPS";
+    }
+
+    function gpsLink(gps) {
+      return `https://www.google.com/maps?q=${gps.lat},${gps.lng}`;
+    }
+
+    document.getElementById("gps-toggle").addEventListener("click", async () => {
+      if (!gpsEnabled) {
+        try {
+          await getGPS();
+          gpsEnabled = true;
+          localStorage.setItem(GPS_PREF_KEY, "true");
+          showToast("GPS activado", "success");
+        } catch (err) {
+          showToast(getGpsErrorMessage(err), "error");
+          return;
+        }
+      } else {
+        gpsEnabled = false;
+        localStorage.setItem(GPS_PREF_KEY, "false");
+      }
+      renderGpsToggle();
+    });
+
+    function renderGpsToggle() {
+      const toggle = document.getElementById("gps-toggle");
+      const status = document.getElementById("gps-status");
+      if (gpsEnabled) {
+        toggle.classList.add("active");
+        status.textContent = "Activado — se guardará la posición";
+      } else {
+        toggle.classList.remove("active");
+        status.textContent = "Desactivado";
+      }
+    }
+
+    function getLocationData(item, locationId) {
+      return ITEMS[item].locations.find(l => l.id === locationId);
+    }
+
+    function formatTimeAgo(iso) {
+      if (!iso) return "";
+      const diffMin = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+      if (diffMin < 1) return "hace unos segundos";
+      if (diffMin < 60) return `hace ${diffMin} min`;
+      const diffHour = Math.floor(diffMin / 60);
+      if (diffHour < 24) return `hace ${diffHour} h`;
+      const diffDay = Math.floor(diffHour / 24);
+      if (diffDay === 1) return "ayer";
+      return `hace ${diffDay} días`;
+    }
+
+    function formatDateTime(iso) {
+      const d = new Date(iso);
+      const today = new Date();
+      const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+      const isToday = d.toDateString() === today.toDateString();
+      const isYesterday = d.toDateString() === yesterday.toDateString();
+      const time = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      if (isToday) return `Hoy ${time}`;
+      if (isYesterday) return `Ayer ${time}`;
+      return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" }) + " " + time;
+    }
+
+    function getDisplayText(entry, item) {
+      if (entry.location === "custom") return entry.customText || "Lugar personalizado";
+      const loc = getLocationData(item, entry.location);
+      return loc ? loc.short : "—";
+    }
+
+    function getColorClass(locationId) {
+      return locationId === "custom" ? "custom" : locationId;
+    }
+
+    let toastTimeout;
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toast");
+      const text = document.getElementById("toast-text");
+      text.textContent = message;
+      toast.className = `toast ${type} show`;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    function openModal() {
+      const modal = document.getElementById("modal");
+      const input = document.getElementById("modal-input");
+      const title = document.getElementById("modal-title");
+      title.textContent = ITEMS[currentItem].modalTitle;
+      input.value = state[currentItem].customText || "";
+      modal.classList.add("show");
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.remove("show");
+    }
+
+    document.getElementById("modal-cancel").addEventListener("click", closeModal);
+    document.getElementById("modal-save").addEventListener("click", () => {
+      const text = document.getElementById("modal-input").value.trim();
+      if (text) {
+        closeModal();
+        setLocation(currentItem, "custom", text);
+      }
+    });
+    document.getElementById("modal-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("modal-save").click();
+      if (e.key === "Escape") closeModal();
+    });
+    document.getElementById("modal").addEventListener("click", (e) => {
+      if (e.target.id === "modal") closeModal();
+    });
+
+    function escapeHtml(s) {
+      if (!s) return "";
+      return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+
+    function renderItemGrid() {
+      const grid = document.getElementById("item-grid");
+      grid.innerHTML = Object.keys(ITEMS).map(key => {
+        const cfg = ITEMS[key];
+        const active = currentItem === key;
+        return `
+          <button class="item-tab ${active ? 'active' : ''}" data-item="${key}">
+            ${ICONS[cfg.tabIcon]}
+            <span class="label">${cfg.tabLabel}</span>
+          </button>
+        `;
+      }).join("");
+
+      grid.querySelectorAll(".item-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          if (savingId) return;
+          currentItem = tab.dataset.item;
+          localStorage.setItem(CURRENT_ITEM_KEY, currentItem);
+          render();
+        });
+      });
+    }
+
+    function render() {
+      renderItemGrid();
+
+      const item = currentItem;
+      const cfg = ITEMS[item];
+      const itemState = state[item];
+
+      const card = document.getElementById("current-card");
+      const selectorLabel = document.getElementById("selector-label");
+
+      if (itemState.location) {
+        const colorClass = getColorClass(itemState.location);
+        const displayText = itemState.location === "custom"
+          ? itemState.customText
+          : getLocationData(item, itemState.location).short;
+        const iconKey = itemState.location === "custom" ? "custom" : itemState.location;
+        const gps = itemState.gps;
+
+        card.className = `current-card ${colorClass}`;
+        card.innerHTML = `
+          <div class="current-row">
+            <div class="icon-box bg-${colorClass}">${ICONS[iconKey]}</div>
+            <div style="flex:1; min-width:0;">
+              <p class="label-small">Ubicación de ${cfg.article} ${cfg.name}</p>
+              <p class="current-text text-${colorClass}">${escapeHtml(displayText)}</p>
+              <div class="time-ago">
+                ${ICONS.clock}
+                <span>Actualizado ${formatTimeAgo(itemState.updatedAt)}</span>
+              </div>
+              ${gps ? `
+                <a class="map-link" href="${gpsLink(gps)}" target="_blank" rel="noopener">
+                  ${ICONS.pin}
+                  <span>Ver en mapa (±${gps.accuracy}m)</span>
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+        selectorLabel.textContent = "Cambiar ubicación";
+      } else {
+        card.className = "current-empty";
+        card.innerHTML = `${cfg.emptyText}<br/>Selecciona una opción 👇`;
+        selectorLabel.textContent = "Selecciona dónde está";
+      }
+
+      const optionsEl = document.getElementById("options");
+      const allLocations = [
+        ...cfg.locations,
+        { id: "custom", label: "Otro lugar (escribirlo)...", short: "" }
+      ];
+
+      optionsEl.innerHTML = allLocations.map(loc => {
+        const active = itemState.location === loc.id;
+        const colorClass = getColorClass(loc.id);
+        const iconKey = loc.id === "custom" ? "custom" : loc.id;
+        const isLoading = savingId === loc.id;
+        const displayLabel = loc.id === "custom" && itemState.customText && active
+          ? `Otro: ${escapeHtml(itemState.customText)}`
+          : loc.label;
+        const rightSide = isLoading
+          ? '<div class="spinner"></div>'
+          : (active ? `
+              <div class="check-circle bg-${colorClass}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            ` : '');
+        return `
+          <button class="option-button ${active ? 'active' : ''} ${colorClass}" data-id="${loc.id}" ${savingId ? 'disabled' : ''}>
+            <div class="option-icon bg-${colorClass}">${ICONS[iconKey]}</div>
+            <span class="option-text ${colorClass}-text">${displayLabel}</span>
+            ${rightSide}
+          </button>
+        `;
+      }).join("");
+
+      optionsEl.querySelectorAll(".option-button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (savingId) return;
+          const id = btn.dataset.id;
+          if (id === "custom") openModal();
+          else setLocation(item, id);
+        });
+      });
+
+      const historyEl = document.getElementById("history");
+      if (itemState.history.length === 0) {
+        historyEl.innerHTML = '<div class="history-empty">Aún no hay historial</div>';
+      } else {
+        historyEl.innerHTML = itemState.history.map(entry => {
+          const colorClass = getColorClass(entry.location);
+          const iconKey = entry.location === "custom" ? "custom" : entry.location;
+          const gps = entry.gps;
+          return `
+            <div class="history-item">
+              <div class="history-icon bg-${colorClass}">${ICONS[iconKey]}</div>
+              <div class="history-text">
+                <div class="history-place">${escapeHtml(getDisplayText(entry, item))}</div>
+                <div class="history-time">${formatDateTime(entry.updatedAt)}</div>
+                ${gps ? `
+                  <a class="history-gps" href="${gpsLink(gps)}" target="_blank" rel="noopener">
+                    ${ICONS.pin}
+                    <span>Ver en mapa (±${gps.accuracy}m)</span>
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    setInterval(() => { if (!savingId) render(); }, 60000);
+
+    load();
+    renderGpsToggle();
+    render();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(err => console.log("SW error:", err));
+      });
+    }
+  </script>
+</body>
+</html>
