@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mis Cosas" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Mis Cosas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+      min-height: 100vh;
+      color: #0f172a;
+      overscroll-behavior: none;
+    }
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .container { max-width: 28rem; margin: 0 auto; padding: 1rem; padding-bottom: 5rem; }
+
+    .app-header {
+      background: #0f172a; border-radius: 1rem;
+      padding: 1rem 1.25rem; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.875rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .app-header .logo {
+      width: 2.75rem; height: 2.75rem; border-radius: 0.625rem;
+      background: rgba(251, 191, 36, 0.15);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .app-header .logo svg { width: 1.5rem; height: 1.5rem; color: #fbbf24; }
+    .app-header h1 {
+      font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.01em;
+    }
+    .app-header .subtitle { font-size: 0.7rem; color: #94a3b8; font-weight: 500; margin-top: 0.1rem; }
+    .header-action {
+      margin-left: auto; background: rgba(255,255,255,0.1); border: none;
+      color: white; width: 2.5rem; height: 2.5rem; border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .header-action svg { width: 1.25rem; height: 1.25rem; }
+    .header-action:active { background: rgba(255,255,255,0.2); }
+
+    .item-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+      background: white; padding: 0.5rem; border-radius: 1rem; margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+    }
+    .item-tab {
+      padding: 0.625rem 0.4rem; border: none; background: transparent;
+      border-radius: 0.625rem; font-size: 0.72rem; font-weight: 600;
+      color: #64748b; cursor: pointer; font-family: inherit; transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      text-align: center; line-height: 1.15; min-height: 4.2rem; justify-content: center;
+      position: relative;
+    }
+    .item-tab.active { background: #0f172a; color: #fbbf24; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .item-tab svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+    .item-tab .label { display: block; max-width: 100%; overflow-wrap: break-word; }
+
+    .item-tab.add-new {
+      border: 2px dashed #cbd5e1; color: #64748b;
+    }
+    .item-tab.add-new.active { background: transparent; color: #64748b; border-color: #64748b; box-shadow: none; }
+
+    .gps-toggle {
+      display: flex; align-items: center; gap: 0.625rem;
+      background: white; padding: 0.625rem 0.875rem; border-radius: 0.875rem;
+      border: 1px solid #e2e8f0; margin-bottom: 1rem;
+      font-size: 0.85rem; cursor: pointer;
+    }
+    .gps-toggle .gps-icon {
+      width: 2rem; height: 2rem; border-radius: 0.5rem;
+      background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: #64748b;
+    }
+    .gps-toggle.active .gps-icon { background: #ecfdf5; color: #059669; }
+    .gps-toggle svg { width: 1.125rem; height: 1.125rem; }
+    .gps-toggle .gps-text { flex: 1; color: #334155; font-weight: 500; }
+    .gps-toggle .gps-status { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; font-weight: 400; }
+    .gps-toggle.active .gps-status { color: #059669; }
+    .switch {
+      position: relative; width: 2.5rem; height: 1.4rem;
+      background: #cbd5e1; border-radius: 9999px; transition: background 0.2s; flex-shrink: 0;
+    }
+    .switch::after {
+      content: ""; position: absolute; top: 0.15rem; left: 0.15rem;
+      width: 1.1rem; height: 1.1rem; background: white; border-radius: 50%;
+      transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .gps-toggle.active .switch { background: #10b981; }
+    .gps-toggle.active .switch::after { transform: translateX(1.1rem); }
+
+    .current-card {
+      border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem;
+      border: 2px solid #e2e8f0; background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s;
+    }
+    .current-card.has-color { background: var(--card-bg); border-color: var(--card-border); }
+    .current-empty {
+      background: white; border: 2px dashed #cbd5e1; border-radius: 1rem;
+      padding: 1.25rem; margin-bottom: 1rem; text-align: center;
+      color: #64748b; font-size: 0.875rem; line-height: 1.5;
+    }
+
+    .current-row { display: flex; align-items: center; gap: 1rem; }
+    .icon-box {
+      width: 3rem; height: 3rem; border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      background: var(--icon-bg, #64748b);
+    }
+    .icon-box svg { width: 1.5rem; height: 1.5rem; color: white; }
+
+    .label-small {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: #64748b; font-weight: 600; margin-bottom: 0.2rem;
+    }
+    .current-text {
+      font-size: 1.05rem; font-weight: 700; line-height: 1.25; word-break: break-word;
+      color: var(--text-color, #0f172a);
+    }
+    .time-ago {
+      display: flex; align-items: center; gap: 0.25rem;
+      margin-top: 0.3rem; font-size: 0.75rem; color: #64748b;
+    }
+    .time-ago svg { width: 0.75rem; height: 0.75rem; }
+
+    .map-link {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      margin-top: 0.625rem; padding: 0.45rem 0.75rem;
+      background: white; border-radius: 9999px;
+      font-size: 0.8rem; font-weight: 600; color: #1d4ed8;
+      text-decoration: none; border: 1px solid #cbd5e1;
+    }
+    .map-link svg { width: 0.875rem; height: 0.875rem; }
+    .map-link:active { background: #f1f5f9; }
+
+    .selector-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.625rem; padding: 0 0.25rem;
+    }
+    .selector-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: #64748b; font-weight: 600;
+    }
+    .edit-link {
+      font-size: 0.75rem; color: #1d4ed8; font-weight: 600;
+      cursor: pointer; background: none; border: none; font-family: inherit;
+      display: flex; align-items: center; gap: 0.25rem;
+    }
+    .edit-link svg { width: 0.875rem; height: 0.875rem; }
+
+    .option-button {
+      width: 100%; display: flex; align-items: center; gap: 0.875rem;
+      padding: 0.875rem; border-radius: 0.875rem; border: 2px solid #e2e8f0;
+      background: white; margin-bottom: 0.625rem; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .option-button:active { transform: scale(0.98); }
+    .option-button:disabled { opacity: 0.6; cursor: wait; }
+    .option-button.active { background: var(--card-bg, white); border-color: var(--card-border, #e2e8f0); }
+
+    .option-icon {
+      width: 2.5rem; height: 2.5rem; border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      background: var(--icon-bg, #64748b);
+    }
+    .option-icon svg { width: 1.25rem; height: 1.25rem; color: white; }
+    .option-text {
+      flex: 1; text-align: left; font-weight: 600; color: #334155; font-size: 0.95rem;
+      word-break: break-word;
+    }
+    .option-button.active .option-text { color: var(--text-color, #0f172a); }
+
+    .check-circle {
+      width: 1.5rem; height: 1.5rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; background: var(--icon-bg, #0f172a);
+    }
+    .check-circle svg { width: 0.875rem; height: 0.875rem; color: white; }
+
+    .spinner {
+      width: 1.25rem; height: 1.25rem; border: 2.5px solid #cbd5e1;
+      border-top-color: #0f172a; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .history-section { margin-top: 1.5rem; }
+    .history-list {
+      background: white; border-radius: 0.875rem;
+      border: 1px solid #e2e8f0; overflow: hidden;
+    }
+    .history-item {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.75rem 0.875rem; border-bottom: 1px solid #f1f5f9;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-icon {
+      width: 2rem; height: 2rem; border-radius: 0.5rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      margin-top: 0.1rem; background: var(--icon-bg, #64748b);
+    }
+    .history-icon svg { width: 1rem; height: 1rem; color: white; }
+    .history-text { flex: 1; min-width: 0; }
+    .history-place { font-size: 0.875rem; font-weight: 600; color: #334155; word-break: break-word; }
+    .history-time { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; }
+    .history-gps {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      margin-top: 0.3rem; font-size: 0.7rem; color: #1d4ed8;
+      text-decoration: none; font-weight: 600;
+    }
+    .history-gps svg { width: 0.7rem; height: 0.7rem; }
+    .history-empty {
+      text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.8rem;
+    }
+
+    /* Modales */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+      display: none; align-items: flex-end; justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-overlay.center { align-items: center; padding: 1rem; }
+    .modal {
+      background: white; border-radius: 1rem 1rem 0 0; padding: 1.25rem;
+      width: 100%; max-width: 28rem; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 -10px 30px -5px rgba(0,0,0,0.2);
+    }
+    .modal.center-modal { border-radius: 1rem; max-width: 24rem; }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;
+    }
+    .modal-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .modal-close {
+      background: #f1f5f9; border: none; width: 2rem; height: 2rem;
+      border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #475569;
+    }
+    .modal-close svg { width: 1.125rem; height: 1.125rem; }
+
+    .modal p { font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem; }
+    .modal label {
+      display: block; font-size: 0.8rem; font-weight: 600; color: #334155;
+      margin-bottom: 0.4rem; margin-top: 0.875rem;
+    }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal input[type="text"] {
+      width: 100%; padding: 0.75rem 0.875rem; border: 2px solid #e2e8f0;
+      border-radius: 0.75rem; font-size: 1rem; font-family: inherit;
+      outline: none; background: #f8fafc;
+    }
+    .modal input[type="text"]:focus { border-color: #0f172a; background: white; }
+    .modal-buttons { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+    .btn {
+      flex: 1; padding: 0.75rem; border-radius: 0.75rem; border: none;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .btn-cancel { background: #f1f5f9; color: #475569; }
+    .btn-save { background: #0f172a; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-secondary {
+      background: white; color: #334155; border: 1px solid #e2e8f0;
+    }
+
+    /* Selector de iconos */
+    .icon-picker {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.4rem;
+      max-height: 14rem; overflow-y: auto;
+      padding: 0.5rem; background: #f8fafc; border-radius: 0.75rem;
+      border: 1px solid #e2e8f0;
+    }
+    .icon-pick-btn {
+      aspect-ratio: 1; border: 2px solid transparent; background: white;
+      border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0;
+    }
+    .icon-pick-btn.selected { border-color: #0f172a; background: #f1f5f9; }
+    .icon-pick-btn svg { width: 1.25rem; height: 1.25rem; color: #334155; }
+
+    /* Selector de colores */
+    .color-picker {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem;
+    }
+    .color-pick-btn {
+      aspect-ratio: 1; border: 3px solid transparent; border-radius: 50%;
+      cursor: pointer; padding: 0;
+    }
+    .color-pick-btn.selected { border-color: #0f172a; }
+
+    /* Lista de ubicaciones editables */
+    .loc-list {
+      background: #f8fafc; border-radius: 0.75rem; border: 1px solid #e2e8f0;
+      padding: 0.5rem; margin-top: 0.4rem;
+    }
+    .loc-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem; background: white; border-radius: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+    .loc-item:last-child { margin-bottom: 0; }
+    .loc-item input {
+      flex: 1; padding: 0.5rem 0.625rem; border: 1px solid #e2e8f0;
+      border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; background: white;
+    }
+    .loc-item .icon-mini {
+      width: 1.75rem; height: 1.75rem; border-radius: 0.4rem; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #cbd5e1; cursor: pointer;
+    }
+    .loc-item .icon-mini svg { width: 0.875rem; height: 0.875rem; color: white; }
+    .loc-item .delete-btn {
+      background: #fee2e2; border: none; color: #dc2626;
+      width: 1.75rem; height: 1.75rem; border-radius: 0.4rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .loc-item .delete-btn svg { width: 0.875rem; height: 0.875rem; }
+    .add-loc-btn {
+      width: 100%; padding: 0.625rem; background: white; border: 1px dashed #cbd5e1;
+      border-radius: 0.5rem; cursor: pointer; font-family: inherit;
+      font-size: 0.85rem; color: #475569; display: flex;
+      align-items: center; justify-content: center; gap: 0.375rem;
+      margin-top: 0.4rem;
+    }
+    .add-loc-btn svg { width: 0.875rem; height: 0.875rem; }
+
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: #0f172a; color: white; padding: 0.75rem 1.25rem;
+      border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.875rem; font-weight: 500;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      z-index: 200; max-width: calc(100% - 2rem);
+    }
+    .toast.show { opacity: 1; }
+    .toast svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+    .toast.success svg { color: #34d399; }
+    .toast.error { background: #991b1b; }
+    .toast.error svg { color: #fca5a5; }
+
+    .footer {
+      text-align: center; font-size: 0.7rem; color: #94a3b8; margin-top: 1.5rem;
+    }
+
+    .preview-icon {
+      width: 3rem; height: 3rem; border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0.4rem auto;
+    }
+    .preview-icon svg { width: 1.5rem; height: 1.5rem; color: white; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="app-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-2 2"/><path d="m18 5 3 3"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Mis Cosas</h1>
+        <div class="subtitle">¿Dónde lo dejé?</div>
+      </div>
+    </div>
+
+    <div id="item-grid" class="item-grid"></div>
+
+    <div id="gps-toggle" class="gps-toggle">
+      <div class="gps-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div class="gps-text">Guardar ubicación GPS</div>
+        <div class="gps-status" id="gps-status">Desactivado</div>
+      </div>
+      <div class="switch"></div>
+    </div>
+
+    <div id="current-card" class="current-empty">
+      Aún no has guardado ninguna ubicación.<br/>
+      Selecciona una abajo 👇
+    </div>
+
+    <div class="selector-header">
+      <span class="selector-label" id="selector-label">Selecciona dónde está</span>
+      <button class="edit-link" id="edit-item-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Editar
+      </button>
+    </div>
+    <div id="options"></div>
+
+    <div class="history-section">
+      <p class="selector-label">Historial reciente</p>
+      <div id="history" class="history-list"></div>
+    </div>
+
+    <p class="footer">Las ubicaciones se guardan automáticamente</p>
+  </div>
+
+  <!-- Modal: escribir ubicación custom -->
+  <div id="custom-modal" class="modal-overlay center">
+    <div class="modal center-modal">
+      <div class="modal-header">
+        <h2 id="custom-title">¿Dónde está?</h2>
+        <button class="modal-close" data-close="custom-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p>Escribe el lugar donde lo dejaste</p>
+      <input type="text" id="custom-input" placeholder="Ej: encima del microondas" maxlength="80" autocomplete="off" />
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" data-close="custom-modal">Cancelar</button>
+        <button class="btn btn-save" id="custom-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: editar/crear objeto -->
+  <div id="item-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="item-modal-title">Nuevo objeto</h2>
+        <button class="modal-close" data-close="item-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <label>Nombre del objeto</label>
+      <input type="text" id="item-name" placeholder="Ej: Reloj, Gafas, Cargador..." maxlength="40" />
+
+      <label>Pestaña corta (lo que aparece en el botón)</label>
+      <input type="text" id="item-tab-label" placeholder="Ej: Reloj" maxlength="14" />
+
+      <label>Icono</label>
+      <div class="icon-picker" id="icon-picker"></div>
+
+      <label>Color</label>
+      <div class="color-picker" id="color-picker"></div>
+
+      <div class="preview-icon" id="preview-icon"></div>
+
+      <label>Ubicaciones</label>
+      <div class="loc-list" id="loc-list"></div>
+      <button class="add-loc-btn" id="add-loc-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Añadir ubicación
+      </button>
+
+      <div class="modal-buttons">
+        <button class="btn btn-danger" id="item-delete-btn" style="display:none">Eliminar</button>
+        <button class="btn btn-cancel" data-close="item-modal">Cancelar</button>
+        <button class="btn btn-save" id="item-save-btn">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast success">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toast-text">Ubicación guardada</span>
+  </div>
+
+  <script>
+    // ============ Catálogo de iconos disponibles ============
+    const ICON_LIBRARY = {
+      llaves: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-2 2"/><path d="m18 5 3 3"/></svg>',
+      cartera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+      moto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5.5 17.5h6l2-3 4-2-3-4-3 1-2 5"/></svg>',
+      movil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+      auriculares: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
+      reloj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><polyline points="12 10 12 12 13 13"/><path d="M16.13 7.66l-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05"/><path d="M7.88 16.36l.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05"/></svg>',
+      gafas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="14" r="4"/><circle cx="18" cy="14" r="4"/><path d="M10 14h4"/><path d="M2 14l3-3"/><path d="M22 14l-3-3"/></svg>',
+      cargador: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+      libro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+      bolsa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+      mochila: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M8 14h8"/></svg>',
+      camara: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+      paraguas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 12a11.05 11.05 0 0 0-22 0zM5 12v7a2 2 0 0 0 4 0M12 12v9"/></svg>',
+      regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+      mando: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="9" y1="14" x2="9" y2="14"/><line x1="15" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="15" y2="18"/></svg>',
+      bici: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M6 15L9 6h6l3 9M9 6l3 9h6"/></svg>',
+      portatil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="21" x2="22" y2="21"/></svg>',
+      tarjeta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+      caja: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+      casa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      coche: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>',
+      bolsillo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      escritorio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      cajon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>',
+      estuche: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="14" rx="3"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+      estrella: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      etiqueta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+      corazon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+      luna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+      sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      fuego: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+      compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+      pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    };
+
+    // Catálogo de colores disponibles (para objetos y ubicaciones)
+    const COLORS = [
+      { id: "amber",   bg: "#fffbeb", border: "#f59e0b", solid: "#f59e0b", text: "#b45309" },
+      { id: "blue",    bg: "#eff6ff", border: "#3b82f6", solid: "#3b82f6", text: "#1d4ed8" },
+      { id: "green",   bg: "#ecfdf5", border: "#10b981", solid: "#10b981", text: "#047857" },
+      { id: "red",     bg: "#fef2f2", border: "#ef4444", solid: "#ef4444", text: "#b91c1c" },
+      { id: "yellow",  bg: "#fefce8", border: "#eab308", solid: "#eab308", text: "#a16207" },
+      { id: "violet",  bg: "#f5f3ff", border: "#8b5cf6", solid: "#8b5cf6", text: "#6d28d9" },
+      { id: "fuchsia", bg: "#fdf4ff", border: "#d946ef", solid: "#d946ef", text: "#a21caf" },
+      { id: "teal",    bg: "#f0fdfa", border: "#14b8a6", solid: "#14b8a6", text: "#0f766e" },
+      { id: "purple",  bg: "#faf5ff", border: "#a855f7", solid: "#a855f7", text: "#7e22ce" },
+      { id: "rose",    bg: "#fff1f2", border: "#f43f5e", solid: "#f43f5e", text: "#be123c" },
+      { id: "cyan",    bg: "#ecfeff", border: "#06b6d4", solid: "#06b6d4", text: "#0e7490" },
+      { id: "indigo",  bg: "#eef2ff", border: "#6366f1", solid: "#6366f1", text: "#4338ca" },
+      { id: "lime",    bg: "#f7fee7", border: "#84cc16", solid: "#84cc16", text: "#4d7c0f" },
+      { id: "orange",  bg: "#fff7ed", border: "#f97316", solid: "#f97316", text: "#c2410c" },
+      { id: "pink",    bg: "#fdf2f8", border: "#ec4899", solid: "#ec4899", text: "#be185d" },
+      { id: "slate",   bg: "#f8fafc", border: "#64748b", solid: "#64748b", text: "#334155" },
+    ];
+
+    function getColor(id) {
+      return COLORS.find(c => c.id === id) || COLORS[0];
+    }
+
+    // Objetos predefinidos al instalar la app por primera vez
+    const DEFAULT_ITEMS = [
+      {
+        id: "llaves",
+        name: "Llaves", tabLabel: "Llaves",
+        article: "las", icon: "llaves", color: "amber",
+        locations: [
+          { id: "l1", label: "Cesto de la entrada", icon: "casa", color: "amber" },
+          { id: "l2", label: "Guantera del coche", icon: "coche", color: "blue" },
+          { id: "l3", label: "En tu bolsillo", icon: "bolsillo", color: "green" },
+        ],
+      },
+      {
+        id: "cartera",
+        name: "Cartera", tabLabel: "Cartera",
+        article: "la", icon: "cartera", color: "blue",
+        locations: [
+          { id: "l1", label: "Entrada de casa", icon: "casa", color: "amber" },
+          { id: "l2", label: "Guantera del conductor", icon: "coche", color: "blue" },
+          { id: "l3", label: "En tu bolsillo", icon: "bolsillo", color: "green" },
+        ],
+      },
+      {
+        id: "llaves_moto",
+        name: "Llaves de la moto", tabLabel: "Llaves moto",
+        article: "las", icon: "moto", color: "red",
+        locations: [
+          { id: "l1", label: "Cesto de la entrada", icon: "casa", color: "amber" },
+          { id: "l2", label: "Puestas en la moto", icon: "moto", color: "red" },
+          { id: "l3", label: "En tu bolsillo", icon: "bolsillo", color: "green" },
+        ],
+      },
+      {
+        id: "movil_empresa",
+        name: "Móvil de empresa", tabLabel: "Móvil empr.",
+        article: "el", icon: "movil", color: "yellow",
+        locations: [
+          { id: "l1", label: "Escritorio del trabajo", icon: "escritorio", color: "yellow" },
+          { id: "l2", label: "En la mochila", icon: "mochila", color: "fuchsia" },
+          { id: "l3", label: "En el coche", icon: "coche", color: "blue" },
+          { id: "l4", label: "Entrada de casa", icon: "casa", color: "amber" },
+        ],
+      },
+      {
+        id: "auriculares_huawei",
+        name: "Auriculares Huawei", tabLabel: "Aur. Huawei",
+        article: "los", icon: "auriculares", color: "violet",
+        locations: [
+          { id: "l1", label: "En su estuche", icon: "estuche", color: "teal" },
+          { id: "l2", label: "En la mochila", icon: "mochila", color: "fuchsia" },
+          { id: "l3", label: "Cajón de la mesilla", icon: "cajon", color: "violet" },
+          { id: "l4", label: "En tu bolsillo", icon: "bolsillo", color: "green" },
+        ],
+      },
+      {
+        id: "auriculares_xiaomi",
+        name: "Auriculares Xiaomi", tabLabel: "Aur. Xiaomi",
+        article: "los", icon: "auriculares", color: "orange",
+        locations: [
+          { id: "l1", label: "En su estuche", icon: "estuche", color: "teal" },
+          { id: "l2", label: "En la mochila", icon: "mochila", color: "fuchsia" },
+          { id: "l3", label: "Cajón de la mesilla", icon: "cajon", color: "violet" },
+          { id: "l4", label: "En tu bolsillo", icon: "bolsillo", color: "green" },
+        ],
+      },
+    ];
+
+    // ============ Estado de la app ============
+    const STORAGE_KEY_ITEMS = "app-items-v5";
+    const STORAGE_KEY_DATA = "app-data-v5";
+    const GPS_PREF_KEY = "gps-enabled";
+    const CURRENT_ITEM_KEY = "current-item";
+
+    let items = [];      // [ {id, name, tabLabel, article, icon, color, locations:[{id,label,icon,color}]} ]
+    let data = {};       // { itemId: {location, customText, updatedAt, gps, history:[]} }
+    let currentItemId = null;
+    let gpsEnabled = false;
+    let savingId = null;
+
+    // Modal item edition state
+    let editingItemId = null;       // null => crear nuevo
+    let modalSelectedIcon = "etiqueta";
+    let modalSelectedColor = "slate";
+    let modalLocations = [];        // [{id, label, icon, color}]
+
+    function load() {
+      try {
+        const rawItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+        if (rawItems) items = JSON.parse(rawItems);
+        else items = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
+
+        const rawData = localStorage.getItem(STORAGE_KEY_DATA);
+        if (rawData) data = JSON.parse(rawData);
+      } catch (e) { console.error(e); items = JSON.parse(JSON.stringify(DEFAULT_ITEMS)); data = {}; }
+
+      // Asegurar que cada item tiene su entrada en data
+      items.forEach(it => {
+        if (!data[it.id]) data[it.id] = { location: null, customText: null, updatedAt: null, gps: null, history: [] };
+        if (!data[it.id].history) data[it.id].history = [];
+      });
+
+      gpsEnabled = localStorage.getItem(GPS_PREF_KEY) === "true";
+      const saved = localStorage.getItem(CURRENT_ITEM_KEY);
+      if (saved && items.find(i => i.id === saved)) currentItemId = saved;
+      else if (items.length > 0) currentItemId = items[0].id;
+    }
+
+    function persistItems() { localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items)); }
+    function persistData()  { localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(data)); }
+
+    function getItem(id) { return items.find(i => i.id === id); }
+
+    // ============ GPS ============
+    function getGPS() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) { reject(new Error("Geo no soportada")); return; }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: Math.round(pos.coords.accuracy) }),
+          (err) => reject(err),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+
+    function getGpsErrorMessage(err) {
+      if (err.code === 1) return "Permiso de GPS denegado";
+      if (err.code === 2) return "GPS no disponible";
+      if (err.code === 3) return "GPS tardó demasiado";
+      return "Error al obtener GPS";
+    }
+
+    function gpsLink(gps) { return `https://www.google.com/maps?q=${gps.lat},${gps.lng}`; }
+
+    document.getElementById("gps-toggle").addEventListener("click", async () => {
+      if (!gpsEnabled) {
+        try {
+          await getGPS();
+          gpsEnabled = true;
+          localStorage.setItem(GPS_PREF_KEY, "true");
+          showToast("GPS activado", "success");
+        } catch (err) {
+          showToast(getGpsErrorMessage(err), "error");
+          return;
+        }
+      } else {
+        gpsEnabled = false;
+        localStorage.setItem(GPS_PREF_KEY, "false");
+      }
+      renderGpsToggle();
+    });
+
+    function renderGpsToggle() {
+      const toggle = document.getElementById("gps-toggle");
+      const status = document.getElementById("gps-status");
+      if (gpsEnabled) {
+        toggle.classList.add("active");
+        status.textContent = "Activado — se guardará la posición";
+      } else {
+        toggle.classList.remove("active");
+        status.textContent = "Desactivado";
+      }
+    }
+
+    // ============ Acciones ============
+    async function setLocation(itemId, locationId, customText = null) {
+      let gps = null;
+      if (gpsEnabled) {
+        savingId = locationId;
+        render();
+        try { gps = await getGPS(); }
+        catch (err) { showToast(getGpsErrorMessage(err), "error"); }
+        finally { savingId = null; }
+      }
+      const now = new Date().toISOString();
+      const entry = { location: locationId, customText, updatedAt: now, gps };
+      data[itemId].location = locationId;
+      data[itemId].customText = customText;
+      data[itemId].updatedAt = now;
+      data[itemId].gps = gps;
+      data[itemId].history.unshift(entry);
+      if (data[itemId].history.length > 5) data[itemId].history = data[itemId].history.slice(0, 5);
+      persistData();
+      render();
+      if (gps) showToast(`Guardado con GPS (±${gps.accuracy}m)`, "success");
+      else if (!gpsEnabled) showToast("Ubicación guardada", "success");
+    }
+
+    // ============ Helpers ============
+    function formatTimeAgo(iso) {
+      if (!iso) return "";
+      const diffMin = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+      if (diffMin < 1) return "hace unos segundos";
+      if (diffMin < 60) return `hace ${diffMin} min`;
+      const diffHour = Math.floor(diffMin / 60);
+      if (diffHour < 24) return `hace ${diffHour} h`;
+      const diffDay = Math.floor(diffHour / 24);
+      if (diffDay === 1) return "ayer";
+      return `hace ${diffDay} días`;
+    }
+
+    function formatDateTime(iso) {
+      const d = new Date(iso);
+      const today = new Date();
+      const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+      const isToday = d.toDateString() === today.toDateString();
+      const isYesterday = d.toDateString() === yesterday.toDateString();
+      const time = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      if (isToday) return `Hoy ${time}`;
+      if (isYesterday) return `Ayer ${time}`;
+      return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" }) + " " + time;
+    }
+
+    function getLocationData(item, locId) { return item.locations.find(l => l.id === locId); }
+
+    function escapeHtml(s) {
+      if (!s) return "";
+      return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+
+    let toastTimeout;
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toast");
+      const text = document.getElementById("toast-text");
+      text.textContent = message;
+      toast.className = `toast ${type} show`;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    // ============ Modal: custom location ============
+    function openCustomModal() {
+      const modal = document.getElementById("custom-modal");
+      const input = document.getElementById("custom-input");
+      const title = document.getElementById("custom-title");
+      const item = getItem(currentItemId);
+      title.textContent = `¿Dónde está ${item.article} ${item.name.toLowerCase()}?`;
+      input.value = data[currentItemId].customText || "";
+      modal.classList.add("show");
+      setTimeout(() => input.focus(), 100);
+    }
+
+    document.getElementById("custom-save").addEventListener("click", () => {
+      const text = document.getElementById("custom-input").value.trim();
+      if (text) {
+        closeAllModals();
+        setLocation(currentItemId, "custom", text);
+      }
+    });
+
+    document.getElementById("custom-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("custom-save").click();
+      if (e.key === "Escape") closeAllModals();
+    });
+
+    // ============ Modal: edit/create item ============
+    function openItemModal(itemId = null) {
+      editingItemId = itemId;
+      const modal = document.getElementById("item-modal");
+      const titleEl = document.getElementById("item-modal-title");
+      const deleteBtn = document.getElementById("item-delete-btn");
+
+      if (itemId) {
+        // Editar existente
+        const item = getItem(itemId);
+        titleEl.textContent = "Editar objeto";
+        document.getElementById("item-name").value = item.name;
+        document.getElementById("item-tab-label").value = item.tabLabel;
+        modalSelectedIcon = item.icon;
+        modalSelectedColor = item.color;
+        modalLocations = JSON.parse(JSON.stringify(item.locations));
+        deleteBtn.style.display = items.length > 1 ? "" : "none";
+      } else {
+        // Crear nuevo
+        titleEl.textContent = "Nuevo objeto";
+        document.getElementById("item-name").value = "";
+        document.getElementById("item-tab-label").value = "";
+        modalSelectedIcon = "etiqueta";
+        modalSelectedColor = "slate";
+        modalLocations = [
+          { id: "l1", label: "En casa", icon: "casa", color: "amber" },
+          { id: "l2", label: "En el coche", icon: "coche", color: "blue" },
+          { id: "l3", label: "En mi bolsillo", icon: "bolsillo", color: "green" },
+        ];
+        deleteBtn.style.display = "none";
+      }
+
+      renderIconPicker();
+      renderColorPicker();
+      renderPreviewIcon();
+      renderLocList();
+      modal.classList.add("show");
+    }
+
+    function renderIconPicker() {
+      const picker = document.getElementById("icon-picker");
+      picker.innerHTML = Object.keys(ICON_LIBRARY).map(key => `
+        <button class="icon-pick-btn ${key === modalSelectedIcon ? 'selected' : ''}" data-icon="${key}">
+          ${ICON_LIBRARY[key]}
+        </button>
+      `).join("");
+      picker.querySelectorAll(".icon-pick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          modalSelectedIcon = btn.dataset.icon;
+          renderIconPicker();
+          renderPreviewIcon();
+        });
+      });
+    }
+
+    function renderColorPicker() {
+      const picker = document.getElementById("color-picker");
+      picker.innerHTML = COLORS.map(c => `
+        <button class="color-pick-btn ${c.id === modalSelectedColor ? 'selected' : ''}"
+                data-color="${c.id}"
+                style="background:${c.solid}"></button>
+      `).join("");
+      picker.querySelectorAll(".color-pick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          modalSelectedColor = btn.dataset.color;
+          renderColorPicker();
+          renderPreviewIcon();
+        });
+      });
+    }
+
+    function renderPreviewIcon() {
+      const preview = document.getElementById("preview-icon");
+      const color = getColor(modalSelectedColor);
+      preview.style.background = color.solid;
+      preview.innerHTML = ICON_LIBRARY[modalSelectedIcon] || ICON_LIBRARY.etiqueta;
+    }
+
+    function renderLocList() {
+      const list = document.getElementById("loc-list");
+      if (modalLocations.length === 0) {
+        list.innerHTML = '<p style="text-align:center; padding:0.75rem; color:#94a3b8; font-size:0.8rem;">Añade al menos una ubicación</p>';
+        return;
+      }
+      list.innerHTML = modalLocations.map((loc, idx) => {
+        const color = getColor(loc.color);
+        return `
+          <div class="loc-item">
+            <div class="icon-mini" style="background:${color.solid}" data-loc-icon="${idx}">
+              ${ICON_LIBRARY[loc.icon] || ICON_LIBRARY.pin}
+            </div>
+            <input type="text" value="${escapeHtml(loc.label)}" data-loc-idx="${idx}" placeholder="Nombre del lugar" maxlength="40" />
+            <button class="delete-btn" data-loc-del="${idx}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      list.querySelectorAll('input[data-loc-idx]').forEach(inp => {
+        inp.addEventListener("input", (e) => {
+          const idx = parseInt(e.target.dataset.locIdx);
+          modalLocations[idx].label = e.target.value;
+        });
+      });
+      list.querySelectorAll('[data-loc-del]').forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = parseInt(btn.dataset.locDel);
+          modalLocations.splice(idx, 1);
+          renderLocList();
+        });
+      });
+      // Cambiar icono/color de una ubicación: ciclar entre iconos al pulsar
+      list.querySelectorAll('[data-loc-icon]').forEach(div => {
+        div.addEventListener("click", () => {
+          const idx = parseInt(div.dataset.locIcon);
+          openLocationStyleModal(idx);
+        });
+      });
+    }
+
+    document.getElementById("add-loc-btn").addEventListener("click", () => {
+      const newId = "l" + Date.now();
+      modalLocations.push({ id: newId, label: "Nueva ubicación", icon: "pin", color: "slate" });
+      renderLocList();
+    });
+
+    // Modal sencillo para cambiar icono/color de una ubicación: usa prompt secuencial
+    function openLocationStyleModal(idx) {
+      const loc = modalLocations[idx];
+      // Vamos a ciclar iconos: muestra diálogo con la lista
+      const iconKeys = Object.keys(ICON_LIBRARY);
+      const currentIconIdx = iconKeys.indexOf(loc.icon);
+      const nextIconIdx = (currentIconIdx + 1) % iconKeys.length;
+      const colorIdx = COLORS.findIndex(c => c.id === loc.color);
+      const nextColorIdx = (colorIdx + 1) % COLORS.length;
+      // Alternamos: una pulsación cambia icono, dos pulsaciones cambian color
+      // Para simplicidad, cada toque cambia icono, pulsación larga cambiaría color (no implementado)
+      // Mejor: cada toque cambia icono, y el último icono pasa al siguiente color
+      if (nextIconIdx === 0) {
+        modalLocations[idx].color = COLORS[nextColorIdx].id;
+      }
+      modalLocations[idx].icon = iconKeys[nextIconIdx];
+      renderLocList();
+    }
+
+    document.getElementById("item-save-btn").addEventListener("click", () => {
+      const name = document.getElementById("item-name").value.trim();
+      const tabLabel = document.getElementById("item-tab-label").value.trim();
+
+      if (!name) { showToast("Pon un nombre al objeto", "error"); return; }
+      if (!tabLabel) { showToast("Pon una etiqueta corta", "error"); return; }
+      if (modalLocations.length === 0) { showToast("Añade al menos una ubicación", "error"); return; }
+      if (modalLocations.some(l => !l.label.trim())) { showToast("Las ubicaciones no pueden estar vacías", "error"); return; }
+
+      // Generar artículo según primera letra (heurística simple)
+      let article = "el";
+      const lower = name.toLowerCase();
+      if (lower.endsWith("s")) article = lower.endsWith("as") ? "las" : "los";
+      else if (lower.endsWith("a")) article = "la";
+
+      if (editingItemId) {
+        const item = getItem(editingItemId);
+        item.name = name;
+        item.tabLabel = tabLabel;
+        item.icon = modalSelectedIcon;
+        item.color = modalSelectedColor;
+        item.locations = modalLocations;
+        item.article = article;
+      } else {
+        const newId = "item_" + Date.now();
+        items.push({
+          id: newId, name, tabLabel, article,
+          icon: modalSelectedIcon, color: modalSelectedColor,
+          locations: modalLocations,
+        });
+        data[newId] = { location: null, customText: null, updatedAt: null, gps: null, history: [] };
+        currentItemId = newId;
+        localStorage.setItem(CURRENT_ITEM_KEY, currentItemId);
+      }
+      persistItems();
+      persistData();
+      closeAllModals();
+      render();
+      showToast(editingItemId ? "Objeto actualizado" : "Objeto creado", "success");
+    });
+
+    document.getElementById("item-delete-btn").addEventListener("click", () => {
+      if (!editingItemId) return;
+      if (!confirm("¿Seguro que quieres eliminar este objeto y todo su historial?")) return;
+      items = items.filter(i => i.id !== editingItemId);
+      delete data[editingItemId];
+      if (currentItemId === editingItemId) {
+        currentItemId = items.length > 0 ? items[0].id : null;
+        localStorage.setItem(CURRENT_ITEM_KEY, currentItemId || "");
+      }
+      persistItems();
+      persistData();
+      closeAllModals();
+      render();
+      showToast("Objeto eliminado", "success");
+    });
+
+    document.getElementById("edit-item-btn").addEventListener("click", () => {
+      if (currentItemId) openItemModal(currentItemId);
+    });
+
+    // ============ Cerrar modales ============
+    function closeAllModals() {
+      document.querySelectorAll(".modal-overlay").forEach(m => m.classList.remove("show"));
+    }
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    document.querySelectorAll(".modal-overlay").forEach(overlay => {
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeAllModals();
+      });
+    });
+
+    // ============ Render principal ============
+    function renderItemGrid() {
+      const grid = document.getElementById("item-grid");
+      const tabs = items.map(item => {
+        const active = currentItemId === item.id;
+        const color = getColor(item.color);
+        const style = active
+          ? `background:#0f172a; color:${color.solid};`
+          : "";
+        return `
+          <button class="item-tab ${active ? 'active' : ''}" data-item-id="${item.id}" style="${style}">
+            ${ICON_LIBRARY[item.icon] || ICON_LIBRARY.etiqueta}
+            <span class="label">${escapeHtml(item.tabLabel)}</span>
+          </button>
+        `;
+      }).join("");
+      const addBtn = `
+        <button class="item-tab add-new" id="add-item-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="label">Añadir</span>
+        </button>
+      `;
+      grid.innerHTML = tabs + addBtn;
+
+      grid.querySelectorAll(".item-tab[data-item-id]").forEach(tab => {
+        tab.addEventListener("click", () => {
+          if (savingId) return;
+          currentItemId = tab.dataset.itemId;
+          localStorage.setItem(CURRENT_ITEM_KEY, currentItemId);
+          render();
+        });
+      });
+      document.getElementById("add-item-tab").addEventListener("click", () => openItemModal(null));
+    }
+
+    function render() {
+      renderItemGrid();
+      if (!currentItemId || !getItem(currentItemId)) {
+        document.getElementById("current-card").className = "current-empty";
+        document.getElementById("current-card").innerHTML = "Aún no tienes objetos. Pulsa <strong>Añadir</strong> arriba para crear el primero.";
+        document.getElementById("options").innerHTML = "";
+        document.getElementById("history").innerHTML = '<div class="history-empty">Sin objetos</div>';
+        return;
+      }
+
+      const item = getItem(currentItemId);
+      const itemData = data[currentItemId];
+      const itemColor = getColor(item.color);
+
+      // Tarjeta actual
+      const card = document.getElementById("current-card");
+      const selectorLabel = document.getElementById("selector-label");
+
+      if (itemData.location) {
+        let displayText, locColor, iconKey;
+        if (itemData.location === "custom") {
+          displayText = itemData.customText;
+          locColor = getColor(item.color);
+          iconKey = "pencil";
+        } else {
+          const loc = getLocationData(item, itemData.location);
+          if (loc) {
+            displayText = loc.label;
+            locColor = getColor(loc.color);
+            iconKey = loc.icon;
+          } else {
+            displayText = "Ubicación eliminada";
+            locColor = getColor("slate");
+            iconKey = "pin";
+          }
+        }
+
+        card.className = "current-card has-color";
+        card.style.setProperty("--card-bg", locColor.bg);
+        card.style.setProperty("--card-border", locColor.border);
+        card.style.setProperty("--text-color", locColor.text);
+        card.style.setProperty("--icon-bg", locColor.solid);
+        card.innerHTML = `
+          <div class="current-row">
+            <div class="icon-box" style="background:${locColor.solid}">${ICON_LIBRARY[iconKey] || ICON_LIBRARY.pin}</div>
+            <div style="flex:1; min-width:0;">
+              <p class="label-small">Ubicación de ${item.article} ${escapeHtml(item.name.toLowerCase())}</p>
+              <p class="current-text" style="color:${locColor.text}">${escapeHtml(displayText)}</p>
+              <div class="time-ago">
+                ${ICON_LIBRARY.clock}
+                <span>Actualizado ${formatTimeAgo(itemData.updatedAt)}</span>
+              </div>
+              ${itemData.gps ? `
+                <a class="map-link" href="${gpsLink(itemData.gps)}" target="_blank" rel="noopener">
+                  ${ICON_LIBRARY.pin}
+                  <span>Ver en mapa (±${itemData.gps.accuracy}m)</span>
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+        selectorLabel.textContent = "Cambiar ubicación";
+      } else {
+        card.className = "current-empty";
+        card.innerHTML = `Aún no has guardado dónde está ${item.article} ${escapeHtml(item.name.toLowerCase())}.<br/>Selecciona una opción 👇`;
+        selectorLabel.textContent = "Selecciona dónde está";
+      }
+
+      // Opciones
+      const optionsEl = document.getElementById("options");
+      const allLocations = [
+        ...item.locations,
+        { id: "custom", label: "Otro lugar (escribirlo)...", icon: "pencil", color: item.color }
+      ];
+      optionsEl.innerHTML = allLocations.map(loc => {
+        const active = itemData.location === loc.id;
+        const locColor = getColor(loc.color);
+        const isLoading = savingId === loc.id;
+        const displayLabel = loc.id === "custom" && itemData.customText && active
+          ? `Otro: ${escapeHtml(itemData.customText)}`
+          : escapeHtml(loc.label);
+        const styleVars = active
+          ? `--card-bg:${locColor.bg}; --card-border:${locColor.border}; --text-color:${locColor.text}; --icon-bg:${locColor.solid};`
+          : `--icon-bg:${locColor.solid};`;
+        const rightSide = isLoading
+          ? '<div class="spinner"></div>'
+          : (active ? `
+              <div class="check-circle" style="background:${locColor.solid}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            ` : '');
+        return `
+          <button class="option-button ${active ? 'active' : ''}" data-id="${loc.id}" style="${styleVars}" ${savingId ? 'disabled' : ''}>
+            <div class="option-icon" style="background:${locColor.solid}">${ICON_LIBRARY[loc.icon] || ICON_LIBRARY.pin}</div>
+            <span class="option-text" style="${active ? `color:${locColor.text}` : ''}">${displayLabel}</span>
+            ${rightSide}
+          </button>
+        `;
+      }).join("");
+
+      optionsEl.querySelectorAll(".option-button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (savingId) return;
+          const id = btn.dataset.id;
+          if (id === "custom") openCustomModal();
+          else setLocation(currentItemId, id);
+        });
+      });
+
+      // Historial
+      const historyEl = document.getElementById("history");
+      if (itemData.history.length === 0) {
+        historyEl.innerHTML = '<div class="history-empty">Aún no hay historial</div>';
+      } else {
+        historyEl.innerHTML = itemData.history.map(entry => {
+          let displayText, locColor, iconKey;
+          if (entry.location === "custom") {
+            displayText = entry.customText || "Lugar personalizado";
+            locColor = getColor(item.color);
+            iconKey = "pencil";
+          } else {
+            const loc = getLocationData(item, entry.location);
+            if (loc) {
+              displayText = loc.label;
+              locColor = getColor(loc.color);
+              iconKey = loc.icon;
+            } else {
+              displayText = "Ubicación eliminada";
+              locColor = getColor("slate");
+              iconKey = "pin";
+            }
+          }
+          return `
+            <div class="history-item">
+              <div class="history-icon" style="background:${locColor.solid}">${ICON_LIBRARY[iconKey] || ICON_LIBRARY.pin}</div>
+              <div class="history-text">
+                <div class="history-place">${escapeHtml(displayText)}</div>
+                <div class="history-time">${formatDateTime(entry.updatedAt)}</div>
+                ${entry.gps ? `
+                  <a class="history-gps" href="${gpsLink(entry.gps)}" target="_blank" rel="noopener">
+                    ${ICON_LIBRARY.pin}
+                    <span>Ver en mapa (±${entry.gps.accuracy}m)</span>
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    setInterval(() => { if (!savingId) render(); }, 60000);
+
+    load();
+    renderGpsToggle();
+    render();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(err => console.log("SW error:", err));
+      });
+    }
+  </script>
+</body>
+</html>
